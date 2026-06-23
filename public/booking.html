@@ -2,8 +2,34 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تأكيد الحجز والدفع - فوري</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    body {
+        margin: 0;
+        padding: 10px;
+        font-family: sans-serif;
+    }
+    /* بنجبر أي فورم أو جدول أو حاوية رئيسية إنها متطلعش برة شاشة الموبايل */
+    form, table, .container, div {
+        max-width: 100% !important;
+    }
+    input, select, textarea, button {
+        width: 100% !important; /* بيخلي الخانات تاخد عرض الشاشة بشكل شيك بدل ما تطلع برة */
+        margin-bottom: 15px;
+        padding: 10px;
+    }
+</style>
+
+
 </head>
 <body class="bg-gray-50 p-6 font-sans">
     <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md border">
