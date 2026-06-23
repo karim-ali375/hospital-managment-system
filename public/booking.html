@@ -10,64 +10,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    /* 1. تصفير وإجبار على الاحتواء */
-    * {
+    /* السطرين دول بس مع سطر الميتا وهتتحل */
+    div, section, form {
+        max-width: 100% !important;
         box-sizing: border-box !important;
     }
-    body {
-        margin: 0 !important;
-        padding: 10px !important;
-        font-family: sans-serif;
-        overflow-x: hidden !important; /* بيمنع الصفحة كلها تتهز يمين وشمال */
-    }
-
-    /* 2. هجوم شامل على أي حاوية أو div أو مربع واخد مقاس ثابت جوة الـ HTML */
-    form, table, .container, .appointments-container, .schedule-container, div, 
-    div[style*="width"], section, article {
-        max-width: 100% !important;
-        width: 100% !important;
-    }
-
-    /* 3. ضبط المربعات البيضاء (الكرات) اللي في الصورة بالظبط وتقليل المسافات الزيادة */
-    div[style*="background-color"], .appointment-card, .schedule-day, form > div, 
-    div[style*="background-color"] div {
-        padding: 12px !important; 
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        box-sizing: border-box !important;
-    }
-
-    /* 4. إجبار النصوص والمواعيد تظهر كاملة وتنزل سطر جديد وماتزقش الفريم */
-    div[style*="background-color"] *, .appointment-card *, span, p, h1, h2, h3, h4, h5, h6 {
-        max-width: 100% !important;
-        white-space: normal !important; /* بينزل النص سطر جديد عشان يظهر كامل */
-    }
-
-    /* 5. ضبط جداول وخانات المواعيد */
-    table {
-        display: block !important;
-        overflow-x: auto !important; 
-    }
-
-    .slots-grid, .time-slots, div[class*="slots"], div[class*="time"], div[class*="schedule"] {
-        display: flex !important;
-        flex-wrap: wrap !important; 
-        gap: 8px !important;
-        justify-content: center !important;
-    }
-
-    .slot, .time-btn, .appointment-slot, button, input[type="radio"]+label {
-        display: inline-block !important;
-        width: auto !important;
-        max-width: 100% !important;
-        padding: 10px 12px !important;
-        font-size: 14px !important;
-        text-align: center;
-    }
-    
-    button, input, select, textarea {
-        width: 100% !important;
-        margin-bottom: 15px;
+    span, p, label {
+        white-space: normal !important; /* عشان النص المقطوع ينزل سطر جديد */
     }
 </style>
 
