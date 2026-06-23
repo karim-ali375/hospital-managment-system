@@ -10,6 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+    /* 1. تصفير المسافات وضمان احتواء العناصر */
     * {
         box-sizing: border-box;
     }
@@ -18,66 +19,57 @@
         padding: 10px;
         font-family: sans-serif;
     }
-    /* بنجبر أي فورم أو جدول أو حاوية رئيسية إنها متطلعش برة شاشة الموبايل */
-    form, table, .container, div {
+
+    /* 2. ضبط الحاويات الرئيسية والفورم والمربعات البيضاء (المواعيد) */
+    form, table, .container, .appointments-container, .schedule-container, div {
         max-width: 100% !important;
+        width: 100% !important;
     }
-    input, select, textarea, button {
-        width: 100% !important; /* بيخلي الخانات تاخد عرض الشاشة بشكل شيك بدل ما تطلع برة */
+
+    /* كود سحري للمربعات البيضاء اللي في الصورة عشان متطلعش برة الشاشة وتلم المسافات */
+    div[style*="background-color"], .appointment-card, .schedule-day, form > div {
+        padding: 10px !important; 
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* 3. ضبط الخانات والمدخلات */
+    input, select, textarea {
+        width: 100% !important;
         margin-bottom: 15px;
         padding: 10px;
     }
 
+    /* 4. ضبط جداول المواعيد (لو موجودة) */
+    table {
+        display: block !important;
+        overflow-x: auto; 
+        white-space: nowrap;
+    }
 
-    /* بيجبر الحاوية بتاعة المواعيد إنها متطلعش برة الشاشة أبداً */
-.appointments-container, .schedule-container, div {
-    max-width: 100% !important;
-overflow: hidden; /* تم تصحيحها هنا */
-}
+    /* 5. ضبط حاويات أزرار المواعيد (تخليها تنزل تحت بعضها تلقائي) */
+    .slots-grid, .time-slots, div[class*="slots"], div[class*="time"], div[class*="schedule"] {
+        display: flex !important;
+        flex-wrap: wrap !important; 
+        gap: 10px !important;
+        justify-content: center !important;
+    }
 
-/* لو المواعيد معروضة في جدول (Table) */
-table {
-    display: block !important;
-    width: 100% !important;
-    overflow-x: auto; /* لو الجدول كبير، المريض يقدر يحركه يمين وشمال بصباعه جوة الإطار من غير ما يبوظ الصفحة */
-    white-space: nowrap;
-}
-
-/* لو المواعيد عبارة عن زراير أو صناديق جنب بعضها */
-.slots-grid, .time-slots {
-    display: flex !important;
-    flex-wrap: wrap !important; /* بيخلي المواعيد الزيادة تنزل تحت بعضها تلقائي بدل ما تطلع برة الفريم */
-    gap: 10px;
-    justify-content: center;
-}
-
-/* بيظبط مقاس زرار المعاد نفسه عشان يبقى مريح ومظبوط */
-.slot, .time-btn, button {
-    padding: 10px 15px !important;
-    font-size: 14px !important;
-    max-width: 100%;
-}
-.slot, .time-btn, .appointment-slot {
-    display: inline-block;
-    max-width: 100% !important;
-    white-space: normal !important; /* عشان لو الكلام كبير ينزل سطر جديد وميزقش الفريم برة */
-}
-/* بيجبر المكان اللي فيه المواعيد والـ divs اللي حواليه يلتزموا بعرض الشاشة */
-div[class*="slots"], div[class*="time"], div[class*="schedule"], .appointments-container {
-    display: flex !important;
-    flex-wrap: wrap !important; /* بيخلي المواعيد تنزل تحت بعضها لو الشاشة ضيقة */
-    gap: 10px !important;
-    justify-content: center !important;
-    max-width: 100% !important;
-    width: 100% !important;
-}
-
-/* بيظبط الزراير أو الصناديق بتاعة المواعيد نفسها عشان متزقش الشاشة لبرة */
-.slot, .time-btn, button, input[type="radio"]+label {
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    white-space: normal !important; /* عشان لو الموعد مكتوب فيه نص طويل ينزل سطر جديد جوة الزرار */
-}
+    /* 6. ضبط أزرار المواعيد نفسها والنصوص عشان متتقطعش */
+    .slot, .time-btn, .appointment-slot, button, input[type="radio"]+label {
+        display: inline-block !important;
+        width: auto !important; /* عشان الزرار مياخدش الشاشة كلها لو مش محتاج */
+        max-width: 100% !important;
+        padding: 10px 15px !important;
+        font-size: 14px !important;
+        white-space: normal !important; /* ينزل سطر جديد لو النص طويل بدل ما يختفي */
+        text-align: center;
+    }
+    
+    button {
+        width: 100% !important; /* زراير الحجز الكبيرة تاخد العرض كامل */
+        margin-bottom: 15px;
+    }
 </style>
 
 
