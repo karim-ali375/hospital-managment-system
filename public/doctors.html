@@ -5,8 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الأطباء المتاحين - مستشفى الشفاء</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
+<!-- ملف الـ CSS الخاص بالأنميشن -->
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
 <style>
+
+
+/* حركة ناعمة لكل الأزرار والكروت لما الماوس ييجي عليها */
+button, .btn, a, .bg-white {
+    transition: all 0.3s ease-in-out !important;
+}
+
+/* تأثير نبض وحركة خفيفة للزرار */
+button:hover, .btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 20px rgba(59, 76, 168, 0.3) !important;
+}
+
+/* كروت الفروع أو الدكاترة تترفع سنة لفوق لما تقف عليها */
+.bg-white:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+
+
     /* كود ترويض مواعيد الدكاترة والمربعات البيضاء */
     * {
         box-sizing: border-box !important;
@@ -63,6 +85,14 @@
             <button onclick="window.location.href='specialties.html'" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700">اختر تخصص آخر</button>
         </div>
     </main>
+    <!-- سكريبت الأنميشن -->
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+  AOS.init({
+    duration: 800, // سرعة الحركة بالملي ثانية
+    once: true // الأنميشن يشتغل مرة واحدة وأنت نازل عشان ميبقاش مزعج
+  });
+</script>
 
     <script>
         // قراءة الاختيارات من الذاكرة المحلية
