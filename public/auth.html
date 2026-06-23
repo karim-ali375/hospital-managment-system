@@ -2,8 +2,36 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة الحسابات - مستشفى الشفاء</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    body {
+        margin: 0;
+        padding: 15px;
+        font-family: sans-serif;
+    }
+    /* بيخلي أي صندوق أو فورم أو حاوية تفرش بمقاس شاشة الموبايل */
+    form, .container, div {
+        width: 100% !important;
+        max-width: 400px; /* مقاس مناسب جداً لشاشات الموبايل */
+        margin: 0 auto;
+    }
+    /* بيظبط الخانات والزراير عشان متطلعش برة الشاشة وتكون سهلة في الكتابة */
+    input, select, textarea, button {
+        width: 100% !important;
+        padding: 12px;
+        margin-bottom: 15px;
+        font-size: 16px; /* المقاس ده بيمنع الموبايل إنه يعمل زووم تلقائي وهو بيكتب */
+    }
+</style>
+
+
 </head>
 <body class="bg-blue-50 flex items-center justify-center min-h-screen p-4">
     <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border">
