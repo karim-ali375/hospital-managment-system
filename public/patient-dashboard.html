@@ -2,8 +2,43 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>حساب المريض الشخصي - مستشفى الشفاء</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    body {
+        margin: 0;
+        padding: 15px;
+        font-family: sans-serif;
+        background-color: #f8f9fa;
+    }
+    /* بيخلي اللوحة أو الكروت تفرش بمقاس شاشة الموبايل */
+    .container, .dashboard-container, .profile-card, div {
+        width: 100% !important;
+        max-width: 800px; /* مقاس مريح للعين على الكمبيوتر والموبايل */
+        margin: 10px auto;
+    }
+    /* لو اللوحة فيها جدول مواعيد أو حجوزات، الكود ده هيخليه يتحرك بصباعك وميبوظش المقاس */
+    table {
+        width: 100% !important;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    /* بيظبط الأزرار والخانات للموبايل */
+    button, .btn, input, select {
+        width: 100% !important;
+        padding: 12px;
+        margin-top: 10px;
+        font-size: 16px;
+    }
+</style>
+
+
 </head>
 <body class="bg-gray-100 font-sans min-h-screen p-4 sm:p-6">
 
