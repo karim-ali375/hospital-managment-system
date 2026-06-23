@@ -5,6 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مستشفى الشفاء - الفروع</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+
+    <style>
+    /* كود الإنقاذ الشامل للمشروع كله على الموبايل */
+    html, body {
+        overflow-x: hidden !important; /* بيمنع الشاشة تتهز يمين وشمال تماماً */
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 5px !important;
+    }
+    
+    /* بيمسك المربعات البيضاء أو أي حاوية مواعيد ويجبرها تقعد جوة إطار الشاشة */
+    div, section, form, .container, [style*="background-color"] {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* بيلغي الإزاحة اللي زاقة المربعات لبرة الفريم */
+    div[style*="background-color"], .appointment-card, .schedule-day {
+        padding: 12px !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* بيجبر النص والمواعيد تنزل سطر جديد عشان مفيش حاجة تتقطع يمين أو شمال */
+    span, p, label, button, h1, h2, h3, h4, td, th {
+        white-space: normal !important;
+        max-width: 100% !important;
+        word-break: break-word !important;
+    }
+</style>
 </head>
 <body class="bg-gray-50 p-6">
     <nav class="bg-blue-600 text-white p-4 rounded-xl mb-8 flex justify-between items-center">
