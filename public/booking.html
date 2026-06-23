@@ -27,6 +27,41 @@
         margin-bottom: 15px;
         padding: 10px;
     }
+
+
+    /* بيجبر الحاوية بتاعة المواعيد إنها متطلعش برة الشاشة أبداً */
+.appointments-container, .schedule-container, div {
+    max-width: 100% !important;
+overflow: hidden; /* تم تصحيحها هنا */
+}
+
+/* لو المواعيد معروضة في جدول (Table) */
+table {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto; /* لو الجدول كبير، المريض يقدر يحركه يمين وشمال بصباعه جوة الإطار من غير ما يبوظ الصفحة */
+    white-space: nowrap;
+}
+
+/* لو المواعيد عبارة عن زراير أو صناديق جنب بعضها */
+.slots-grid, .time-slots {
+    display: flex !important;
+    flex-wrap: wrap !important; /* بيخلي المواعيد الزيادة تنزل تحت بعضها تلقائي بدل ما تطلع برة الفريم */
+    gap: 10px;
+    justify-content: center;
+}
+
+/* بيظبط مقاس زرار المعاد نفسه عشان يبقى مريح ومظبوط */
+.slot, .time-btn, button {
+    padding: 10px 15px !important;
+    font-size: 14px !important;
+    max-width: 100%;
+}
+.slot, .time-btn, .appointment-slot {
+    display: inline-block;
+    max-width: 100% !important;
+    white-space: normal !important; /* عشان لو الكلام كبير ينزل سطر جديد وميزقش الفريم برة */
+}
 </style>
 
 
