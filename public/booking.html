@@ -62,6 +62,22 @@ table {
     max-width: 100% !important;
     white-space: normal !important; /* عشان لو الكلام كبير ينزل سطر جديد وميزقش الفريم برة */
 }
+/* بيجبر المكان اللي فيه المواعيد والـ divs اللي حواليه يلتزموا بعرض الشاشة */
+div[class*="slots"], div[class*="time"], div[class*="schedule"], .appointments-container {
+    display: flex !important;
+    flex-wrap: wrap !important; /* بيخلي المواعيد تنزل تحت بعضها لو الشاشة ضيقة */
+    gap: 10px !important;
+    justify-content: center !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* بيظبط الزراير أو الصناديق بتاعة المواعيد نفسها عشان متزقش الشاشة لبرة */
+.slot, .time-btn, button, input[type="radio"]+label {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    white-space: normal !important; /* عشان لو الموعد مكتوب فيه نص طويل ينزل سطر جديد جوة الزرار */
+}
 </style>
 
 
