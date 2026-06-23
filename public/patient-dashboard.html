@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>حساب المريض الشخصي - مستشفى الشفاء</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen p-4 sm:p-6">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <div class="bg-white rounded-2xl shadow-md border p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            
+            <div id="profile-view-mode" class="flex items-center gap-4 w-full">
+                <img id="user-avatar" src="" class="w-20 h-20 rounded-full object-cover border-2 border-blue-600 shadow-sm">
+                <div>
+                    <h2 id="user-display-name" class="text-xl font-bold text-gray-900">...</h2>
+                    <p id="user-display-phone" class="text-sm text-gray-500 mt-0.5">...</p>
+                    <span class="inline-block bg-blue-50 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full border border-blue-100 mt-2">🏥 مريض مسجل</span>
+                </div>
+                <button onclick="toggleEditMode(true)" class="mr-auto bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-xl border transition flex items-center gap-1">📝 تعديل الحساب</button>
+            </div>
+
+            <form id="profile-edit-mode" onsubmit="updateProfile(event)" class="hidden w-full bg-gray-50 border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div class="sm:col-span-2 border-b pb-2 mb-1 flex justify-between items-center">
+                    <h4 class="font-bold text-blue-950 text-sm">🛠️ تعديل بيانات حسابك وصورتك:</h4>
+                    <button type="button" onclick="toggleEditMode(false)" class="text-gray-500 hover:text-gray-700 font-bold">إلغاء ✖️</button>
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700">الاسم الجديد:</label>
+                    <input type="text" id="edit-name" required class="w-full border p-2 rounded-xl mt-1 bg-white outline-blue-600 text-sm">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700">رقم التليفون الجديد:</label>
+                    <input type="text" id="edit-phone" required class="w-full border p-2 rounded-xl mt-1 bg-white outline-blue-600 text-sm">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block font-medium text-gray-700">تغيير الصورة الشخصية:</label>
+                    <input type="file" id="edit-avatar-file" accept="image/*" class="w-full mt-1 file:bg-blue-600 file:text-white file:px-3 file:py-1.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:cursor-pointer">
+                </div>
+                <div class="sm:col-span-2 flex justify-end gap-2 mt-2">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-bold shadow transition">حفظ التغييرات الجديدة ✅</button>
+                </div>
+            </form>
+
+            <button onclick="localStorage.removeItem('currentUser'); window.location.href='auth.html';" class="bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold px-4 py-2 rounded-xl border border-red-100 transition whitespace-nowrap">تسجيل الخروج</button>
+        </div>
+
+        <div class="bg-blue-900 rounded-2xl shadow-lg p-6 text-white flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h3 class="text-lg font-bold">تعبان وعايز تحجز كشف طبي؟ 🤔</h3>
+                <p class="text-sm text-blue-200 mt-1">اختر التخصص والفرع الأقرب ليك، واحجز ميعادك مع أكفأ الأطباء في أقل من دقيقة.</p>
+            </div>
+           <a href="index.html" class="bg-white text-blue-950 font-bold px-5 py-3 rounded-xl shadow hover:bg-blue-50 transition block text-center whitespace-nowrap text-sm">احجز كشف جديد الآن 🚀</a>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-md border p-6">
+            <h3 class="text-lg font-bold text-blue-950 mb-4 flex items-center gap-2">📋 أرشيف حجوزاتك ومتابعة الطلبات</h3>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-right border-collapse text-xs sm:text-sm">
+                    <thead>
+                        <tr class="bg-blue-950 text-white font-bold">
+                            <th class="p-4 rounded-r-xl">الطبيب المعالج</th>
+                            <th class="p-4">اسم المريض بالكشف</th>
+                            <th class="p-4">رقم الهاتف</th>
+                            <th class="p-4">الميعاد والتوقيت</th>
+                            <th class="p-4 rounded-l-xl text-center">حالة الطلب حالياً</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body" class="divide-y divide-gray-100">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 1. قراءة بيانات المريض الحالية وعرضها في الصفحة
+        let user = JSON.parse(localStorage.getItem('currentUser'));
+        if (!user) {
+            window.location.href = 'auth.html';
+        }
+
+        function displayUserData() {
+            document.getElementById('user-avatar').src = user.avatar || 'https://via.placeholder.com/150';
+            document.getElementById('user-display-name').innerText = user.name;
+            document.getElementById('user-display-phone').innerText = `📞 ${user.phone}`;
+            
+            // ملء خانات فورم التعديل كقيم مبدئية
+            document.getElementById('edit-name').value = user.name;
+            document.getElementById('edit-phone').value = user.phone;
+        }
+
+        function toggleEditMode(show) {
+            if (show) {
+                document.getElementById('profile-view-mode').classList.add('hidden');
+                document.getElementById('profile-edit-mode').classList.remove('hidden');
+            } else {
+                document.getElementById('profile-view-mode').classList.remove('hidden');
+                document.getElementById('profile-edit-mode').classList.add('hidden');
+            }
+        }
+
+        // دالة حفظ وتحديث البيانات الشخصية للمريض
+        function updateProfile(e) {
+            e.preventDefault();
+            const newName = document.getElementById('edit-name').value.trim();
+            const newPhone = document.getElementById('edit-phone').value.trim();
+            const fileInput = document.getElementById('edit-avatar-file');
+            const file = fileInput.files[0];
+
+            const sendUpdate = (avatarBase64) => {
+                const updatedPayload = {
+                    user: user.user, // اليوزر نيم ثابت لتعريف الحساب بالسيرفر
+                    pass: user.pass,
+                    name: newName,
+                    phone: newPhone,
+                    avatar: avatarBase64 || user.avatar
+                };
+
+                fetch('/api/auth/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedPayload)
+                })
+                .then(res => res.json())
+                .then(resData => {
+                    if (resData.success) {
+                        alert('تم تحديث بيانات حسابك وصورتك الشخصية بنجاح! 🎉');
+                        localStorage.setItem('currentUser', JSON.stringify(resData.user));
+                        user = resData.user;
+                        displayUserData();
+                        toggleEditMode(false);
+                        loadPatientHistory(); // إعادة تحميل الهيستوري بالتحديث الجديد
+                    }
+                });
+            };
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => sendUpdate(reader.result);
+                reader.readAsDataURL(file);
+            } else {
+                sendUpdate(null);
+            }
+        }
+
+        // 2. تحميل وعرض تاريخ الحجوزات (History) الخاص بهذا الحساب بالملّي
+        function loadPatientHistory() {
+            fetch('/api/admin/bookings')
+                .then(res => res.json())
+                .then(allBookings => {
+                    const tbody = document.getElementById('history-table-body');
+                    tbody.innerHTML = '';
+
+                    // فلترة ذكية: جلب الحجوزات التابعة لتليفون الحساب الحالي
+                    const myHistory = allBookings.filter(b => b.accountPhone === user.phone || b.phone === user.phone);
+
+                    if (myHistory.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500 font-medium">ليس لديك أي حجوزات سابقة حتى الآن.</td></tr>`;
+                        return;
+                    }
+
+                    myHistory.forEach(b => {
+                        let badgeColor = b.status === 'تم التأكيد' ? 'text-green-700 bg-green-50 border-green-200' : b.status === 'مرفوض' ? 'text-red-700 bg-red-50 border-red-200' : 'text-yellow-700 bg-yellow-50 border-yellow-200';
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="p-4 font-bold text-blue-900">${b.doctor}</td>
+                                <td class="p-4 font-medium text-gray-800">${b.patientName}</td>
+                                <td class="p-4 text-gray-600">${b.phone}</td>
+                                <td class="p-4 text-xs"><strong>${b.day}</strong><br><span class="text-gray-500">${b.slot}</span></td>
+                                <td class="p-4 text-center">
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold border ${badgeColor}">${b.status}</span>
+                                </td>
+                            </tr>`;
+                    });
+                });
+        }
+
+        // تشغيل الدوال عند فتح الصفحة
+        displayUserData();
+        loadPatientHistory();
+    </script>
+</body>
+</html>

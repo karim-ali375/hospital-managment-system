@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>ملف الطبيب والحجز - مستشفى الشفاء</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen p-6">
+    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-md border overflow-hidden">
+        
+        <!-- هيدر الطبيب -->
+        <div class="bg-blue-900 p-6 text-white flex flex-col sm:flex-row items-center gap-6">
+            <img id="doc-img" src="" class="w-28 h-28 rounded-full object-cover border-4 border-blue-200">
+            <div class="text-center sm:text-right">
+                <h2 id="doc-name" class="text-2xl font-bold"></h2>
+                <p id="doc-spec" class="text-blue-200 font-medium"></p>
+                <p id="doc-bio" class="text-sm text-gray-300 mt-2"></p>
+            </div>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- مواعيد الطبيب خلال الأسبوع -->
+            <div>
+                <h3 class="font-bold text-gray-800 text-lg mb-3">📅 مواعيد الطبيب هذا الأسبوع:</h3>
+                <div id="schedule-list" class="space-y-2"></div>
+            </div>
+
+            <!-- فورم الدفع بـ فوري -->
+            <!-- الجزء الخاص بالفورم داخل ملف profile.html -->
+<div class="bg-gray-50 p-4 rounded-xl border">
+    <h3 class="font-bold text-blue-950 mb-2">💳 الدفع السريع عبر فوري / كاش:</h3>
+    <p class="text-xs text-amber-700 bg-amber-50 p-2 rounded mb-4 border border-amber-200">
+        برجاء تحويل مبلغ **200 جنيه** للرقم: <strong class="text-blue-900">01099998887</strong> وارفع صورة الإيصال بالأسفل لتأكيد الحجز.
+    </p>
+    
+    <form onsubmit="confirmBooking(event)" class="space-y-3">
+        <div>
+            <label class="block text-xs font-medium">اسم المريض:</label>
+            <input type="text" id="p-name" required class="w-full border p-2 rounded-lg bg-white text-sm">
+        </div>
+        <div>
+            <label class="block text-xs font-medium">رقم الهاتف:</label>
+            <input type="tel" id="p-phone" required class="w-full border p-2 rounded-lg bg-white text-sm">
+        </div>
+        <div>
+            <label class="block text-xs font-medium">اختر صورة إيصال فوري من جهازك:</label>
+            <!-- غيرنا المدخل هنا ليكون ملف (File) بدل URL -->
+            <input type="file" id="p-receipt-file" accept="image/*" required class="w-full border p-1.5 rounded-lg bg-white text-sm">
+        </div>
+        <button type="submit" class="w-full bg-green-600 text-white py-2.5 rounded-lg font-bold hover:bg-green-700 transition">تأكيد الحجز وإرسال الإيصال 🚀</button>
+    </form>
+</div>
+
+<script>
+    // 1. قراءة بيانات الدكتور المختار من الـ localStorage
+    const docData = localStorage.getItem('selectedDoctor');
+    if (!docData) {
+        alert('برجاء اختيار دكتور أولاً!');
+        window.location.href = 'doctors.html';
+    }
+    const doc = JSON.parse(docData);
+
+    // 2. قراءة بيانات المريض الحالي المسجل دخوله
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+    // عرض بيانات الدكتور في الصفحة
+    document.getElementById('doc-img').src = doc.image;
+    document.getElementById('doc-name').innerText = doc.name;
+    document.getElementById('doc-spec').innerText = `تخصص ${doc.specialty} (${doc.branch})`;
+    document.getElementById('doc-bio').innerText = doc.bio;
+
+    // [تعديل ذكي]: لو المريض مسجل دخول، بنفتح الخانات يعدلها براحته بس بنسيب بياناته كاقتراح
+    if (currentUser) {
+        document.getElementById('p-name').value = currentUser.name;
+        document.getElementById('p-phone').value = currentUser.phone;
+    }
+
+    // رسم مواعيد الدكتور
+    const schedDiv = document.getElementById('schedule-list');
+    schedDiv.innerHTML = '';
+    Object.keys(doc.schedule).forEach((day, index) => {
+        schedDiv.innerHTML += `
+            <label class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100 cursor-pointer hover:bg-blue-100 transition block w-full mb-2 text-right">
+                <input type="radio" name="selected_slot" value="${day} | ${doc.schedule[day]}" ${index === 0 ? 'checked' : ''} class="w-4 h-4 text-blue-600">
+                <div class="inline-block mr-2">
+                    <span class="font-bold text-blue-900">${day}:</span>
+                    <span class="text-sm text-gray-700 mr-1">${doc.schedule[day]}</span>
+                </div>
+            </label>
+        `;
+    });
+
+    // دالة تأكيد الحجز
+    function confirmBooking(e) {
+        e.preventDefault();
+
+        const selectedRadio = document.querySelector('input[name="selected_slot"]:checked').value;
+        const [day, slot] = selectedRadio.split(' | ');
+
+        const fileInput = document.getElementById('p-receipt-file');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('برجاء اختيار صورة الإيصال أولاً');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = function () {
+            const base64Image = reader.result;
+
+            // تجهيز بيانات الحجز
+            const bookingData = {
+                patientName: document.getElementById('p-name').value.trim(), 
+                phone: document.getElementById('p-phone').value.trim(),       
+                // هنا بقى السر: لو المريض مسجل دخول بناخد تليفونه، لو مش مسجل بنحط رقم التليفون اللي كتبه عادي عشان السيرفر ميقفش
+                accountPhone: currentUser ? currentUser.phone : document.getElementById('p-phone').value.trim(), 
+                doctor: doc.name,
+                day: day,
+                slot: slot,
+                price: "200 جنيه",
+                receipt: base64Image
+            };
+
+            fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bookingData)
+            }).then(() => {
+                alert('تم إرسال حجزك بنجاح!');
+                
+                // [إلغاء طلب الـ Login]: لو هو جوه الأكونت يرجعه للـ Dashboard علطول، لو بره يوديه لصفحة الدخول
+                if (currentUser) {
+                    window.location.href = 'patient-dashboard.html';
+                } else {
+                    window.location.href = 'auth.html';
+                }
+            });
+        };
+
+        reader.readAsDataURL(file);
+    }
+</script>
+</body>
+</html>

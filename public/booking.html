@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تأكيد الحجز والدفع - فوري</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-50 p-6 font-sans">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md border">
+        <h2 class="text-2xl font-bold text-blue-900 mb-4 text-center">تأكيد الحجز والدفع الإلكتروني 💳</h2>
+        
+        <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl mb-6 text-sm text-amber-900">
+            <p class="font-bold mb-1">📢 خطوات الدفع عبر فوري / كاش:</p>
+            <p>1. قم بتحويل مبلغ **200 جنيه** إلى الرقم التالي: <strong class="text-base text-blue-900">01099998887</strong></p>
+            <p>2. خذ لقطة شاشة (Screenshot) للإيصال وارفعها بالأسفل.</p>
+        </div>
+
+        <form onsubmit="submitBooking(event)" class="space-y-4">
+            <div>
+                <label class="block font-medium mb-1">اسم المريض بالكامل:</label>
+                <input type="text" id="p-name" required class="w-full border p-2 rounded-xl outline-blue-600">
+            </div>
+            <div>
+                <label class="block font-medium mb-1">رقم الهاتف:</label>
+                <input type="tel" id="p-phone" required class="w-full border p-2 rounded-xl outline-blue-600">
+            </div>
+            <div>
+                <label class="block font-medium mb-1">رابط صورة إيصال التحويل:</label>
+                <input type="text" id="p-receipt" placeholder="ضع رابط الصورة هنا لتست التجربة" required class="w-full border p-2 rounded-xl outline-blue-600">
+            </div>
+            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition">إرسال الطلب للأدمن للتأكيد 🚀</button>
+        </form>
+    </div>
+
+    <script>
+        function submitBooking(e) {
+            e.preventDefault();
+            const doc = JSON.parse(sessionStorage.getItem('selectedDoctor')) || { name: "دكتور افتراضي", branch: "القاهرة", schedule: ["مفتوح"] };
+            
+            const bookingData = {
+                patientName: document.getElementById('p-name').value,
+                phone: document.getElementById('p-phone').value,
+                doctor: doc.name,
+                slot: doc.schedule[0],
+                branch: doc.branch,
+                receipt: document.getElementById('p-receipt').value
+            };
+
+            fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bookingData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    alert('تم إرسال حجزك بنجاح! الإيصال قيد المراجعة حالياً من قبل الأدمن.');
+                    window.location.href = 'index.html';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

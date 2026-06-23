@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>بوابة الحسابات - مستشفى الشفاء</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-blue-50 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border">
+        <h2 id="auth-title" class="text-2xl font-bold text-center text-blue-900 mb-6">تسجيل الدخول 🏥</h2>
+        
+        <form id="auth-form" onsubmit="handleSubmit(event)" class="space-y-4">
+            <div id="signup-fields" class="hidden space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">الاسم بالكامل:</label>
+                    <input type="text" id="fullname" class="w-full border p-2 rounded-xl mt-1 outline-blue-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">رقم الهاتف:</label>
+                    <input type="tel" id="phone" class="w-full border p-2 rounded-xl mt-1 outline-blue-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">اختر صورتك الشخصية:</label>
+                    <input type="file" id="user-avatar" accept="image/*" class="w-full border p-1.5 rounded-xl mt-1 bg-white text-xs">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">اسم المستخدم:</label>
+                <input type="text" id="username" required class="w-full border p-2 rounded-xl mt-1 outline-blue-600">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">كلمة المرور:</label>
+                <input type="password" id="password" required class="w-full border p-2 rounded-xl mt-1 outline-blue-600">
+            </div>
+            <button type="submit" id="submit-btn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">دخول</button>
+        </form>
+
+        <p class="text-center text-sm text-gray-600 mt-6">
+            <span id="toggle-text">ليس لديك حساب؟</span>
+            <button onclick="toggleAuthMode()" id="toggle-link" class="text-blue-600 font-bold underline ml-1">إنشاء حساب مريض</button>
+        </p>
+    </div>
+
+    <script>
+        let isLoginMode = true;
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? 'تسجيل الدخول 🏥' : 'إنشاء حساب مريض جديد 🧑‍⚕️';
+            document.getElementById('signup-fields').classList.toggle('hidden', isLoginMode);
+            document.getElementById('submit-btn').innerText = isLoginMode ? 'دخول' : 'تسجيل حساب جديد';
+        }
+
+        function handleSubmit(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+
+            if (isLoginMode) {
+                if (user === 'admin' && pass === 'admin123') {
+                    window.location.href = 'admin.html';
+                    return;
+                }
+                
+                fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user, pass })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        localStorage.setItem('currentUser', JSON.stringify(data.user));
+                        window.location.href = 'patient-dashboard.html'; // توجيه لبروفايل المريض الشخصي
+                    } else {
+                        alert('اسم المستخدم أو الباسورد غلط!');
+                    }
+                });
+            } else {
+                const fileInput = document.getElementById('user-avatar');
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onloadend = function() {
+                    const signupData = {
+                        name: document.getElementById('fullname').value,
+                        phone: document.getElementById('phone').value,
+                        avatar: reader.result || 'https://via.placeholder.com/150',
+                        user, pass
+                    };
+
+                    fetch('/api/auth/signup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(signupData)
+                    }).then(() => {
+                        alert('تم إنشاء حسابك الشخصي بنجاح! يمكنك الآن تسجيل الدخول.');
+                        toggleAuthMode();
+                    });
+                };
+
+                if(file) { reader.readAsDataURL(file); } else { reader.onloadend(); }
+            }
+        }
+    </script>
+</body>
+</html>

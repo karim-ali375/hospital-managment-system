@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة تحكم الإدارة الشاملة</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen p-6">
+    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg border p-6">
+        
+        <!-- هيدر اللوحة -->
+        <div class="flex justify-between items-center border-b pb-4 mb-6">
+            <h1 class="text-xl font-bold text-blue-950">⚙️ لوحة الإدارة والتحكم الشاملة بمستشفى الشفاء</h1>
+            <button onclick="localStorage.removeItem('currentUser'); window.location.href='auth.html';" class="bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-red-700 transition">تسجيل الخروج</button>
+        </div>
+
+        <!-- أزرار التنقل بين الأقسام (Tabs) -->
+        <div class="flex gap-2 mb-6 border-b pb-2">
+            <button onclick="switchTab('bookings-tab')" id="btn-bookings-tab" class="px-4 py-2 font-bold rounded-xl text-sm bg-blue-900 text-white shadow-sm">📋 إدارة الحجوزات والطلبات</button>
+            <button onclick="switchTab('doctors-tab')" id="btn-doctors-tab" class="px-4 py-2 font-bold rounded-xl text-sm bg-gray-100 text-gray-700 hover:bg-gray-200">🧑‍⚕️ إدارة وبيانات الأطباء</button>
+        </div>
+
+        <!-- ================= تبويب إدارة الحجوزات ================= -->
+        <div id="bookings-tab" class="tab-content">
+            <div class="overflow-x-auto">
+                <table class="w-full text-right border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-blue-900 text-white font-bold">
+                            <th class="p-4 rounded-r-xl">بيانات المريض</th>
+                            <th class="p-4">الطبيب</th>
+                            <th class="p-4">التوقيت</th>
+                            <th class="p-4">قيمة الكشف</th>
+                            <th class="p-4">إيصال فوري</th>
+                            <th class="p-4">الحالة</th>
+                            <th class="p-4 text-center rounded-l-xl">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table-body" class="divide-y divide-gray-100"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= تبويب إدارة الأطباء والبيانات ================= -->
+        <div id="doctors-tab" class="tab-content hidden">
+            
+            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <h3 class="font-bold text-blue-950 text-sm">🏢 اختر الفرع المراد إدارته وعرض أطبائه:</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">يمكنك تصفية الأطباء حسب الفرع الحالي لإدارة وتعديل بياناتهم.</p>
+                </div>
+                <select id="admin-branch-filter" onchange="loadDoctorsData()" class="border p-2.5 rounded-xl bg-white font-bold text-blue-900 text-xs outline-blue-600 min-w-[200px]">
+                    <option value="الكل">🌍 عرض كل الفروع</option>
+                    <option value="القاهرة">📍 فرع القاهرة</option>
+                    <option value="الجيزة">📍 فرع الجيزة</option>
+                    <option value="الإسكندرية">📍 فرع الإسكندرية</option>
+                </select>
+            </div>
+
+            <div class="bg-gray-50 border rounded-2xl p-4 mb-6">
+                <h3 id="form-title" class="font-bold text-gray-800 text-base mb-3">➕ إضافة دكتور جديد للسيستم / أو تعديل دكتور ومواعيده</h3>
+                <form id="doctor-form" onsubmit="saveDoctor(event)" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                    <input type="hidden" id="doc-id">
+                    <div>
+                        <label class="block font-medium text-gray-700">اسم الدكتور:</label>
+                        <input type="text" id="doc-name" required class="w-full border p-2 rounded-xl mt-1 bg-white outline-blue-600">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700">التخصص:</label>
+                        <input type="text" id="doc-specialty" required class="w-full border p-2 rounded-xl mt-1 bg-white outline-blue-600" placeholder="باطنة، عيون...">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700">الفرع (المحافظة التابع لها):</label>
+                        <select id="doc-branch" required class="w-full border p-2 rounded-xl mt-1 bg-white outline-blue-600 font-bold text-gray-700">
+                            <option value="القاهرة">القاهرة</option>
+                            <option value="الجيزة">الجيزة</option>
+                            <option value="الإسكندرية">الإسكندرية</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block font-medium text-gray-700">النبذة التعرفية (Bio):</label>
+                        <input type="text" id="doc-bio" required class="w-full border p-2 rounded-xl mt-1 bg-white outline-blue-600">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700">رابط صورة الدكتور (URL):</label>
+                        <input type="url" id="doc-image" required class="w-full border p-2 rounded-xl mt-1 bg-white outline-blue-600">
+                    </div>
+                    
+                    <div class="md:col-span-3">
+                        <label class="block font-medium text-gray-700 text-blue-900 font-bold">مواعيد العمل (اكتب اليوم ونطاق الساعة وافصل بينهم بـ علامة | وافصل بين الأيام بـ كومة ,):</label>
+                        <input type="text" id="doc-schedule" required class="w-full border p-2 rounded-xl mt-1 bg-white outline-blue-600 font-mono" 
+                               placeholder="السبت | 10:00 ص - 02:00 ظ , الأحد | 12:00 ظ - 04:00 ع">
+                    </div>
+
+                    <div class="md:col-span-3 flex justify-end gap-2 mt-2">
+                        <button type="button" onclick="clearDocForm()" class="bg-gray-300 px-4 py-2 rounded-xl font-bold">تفريغ الخانات</button>
+                        <button type="submit" class="bg-green-600 text-white px-5 py-2 rounded-xl font-bold hover:bg-green-700 shadow">حفظ البيانات والمواعيد</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-right border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-gray-800 text-white font-bold">
+                            <th class="p-3 rounded-r-xl">الصورة</th>
+                            <th class="p-3">اسم الدكتور</th>
+                            <th class="p-3">التخصص والفرع</th>
+                            <th class="p-3">المواعيد الحالية</th>
+                            <th class="p-3 text-center rounded-l-xl">التحكم والإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="doctors-table-body" class="divide-y divide-gray-100"></tbody>
+                </table>
+            </div>
+        </div>
+
+    <script>
+    // دالة التنقل بين التبويبات
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById(tabId).classList.remove('hidden');
+        
+        document.getElementById('btn-bookings-tab').className = tabId === 'bookings-tab' ? 'px-4 py-2 font-bold rounded-xl text-sm bg-blue-900 text-white shadow-sm' : 'px-4 py-2 font-bold rounded-xl text-sm bg-gray-100 text-gray-700 hover:bg-gray-200';
+        document.getElementById('btn-doctors-tab').className = tabId === 'doctors-tab' ? 'px-4 py-2 font-bold rounded-xl text-sm bg-blue-900 text-white shadow-sm' : 'px-4 py-2 font-bold rounded-xl text-sm bg-gray-100 text-gray-700 hover:bg-gray-200';
+        
+        if(tabId === 'doctors-tab') loadDoctorsData();
+        if(tabId === 'bookings-tab') loadBookingsData();
+    }
+
+    // 1. تحميل وإدارة الحجوزات
+    function loadBookingsData() {
+        fetch('/api/admin/bookings')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('admin-table-body');
+                tbody.innerHTML = data.length === 0 ? `<tr><td colspan="7" class="p-4 text-center text-gray-500">لا توجد حجوزات حالياً.</td></tr>` : '';
+                data.forEach(b => {
+                    let badgeColor = b.status === 'تم التأكيد' ? 'text-green-700 bg-green-50 border-green-200' : b.status === 'مرفوض' ? 'text-red-700 bg-red-50 border-red-200' : 'text-yellow-700 bg-yellow-50 border-yellow-200';
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="p-4"><strong>${b.patientName}</strong><br><span class="text-gray-500 text-xs">${b.phone}</span></td>
+                            <td class="p-4 text-blue-900 font-bold">${b.doctor}</td>
+                            <td class="p-4 text-xs"><strong>${b.day}</strong><br>${b.slot}</td>
+                            <td class="p-4 text-green-600 font-bold">${b.price}</td>
+                            <td class="p-4"><a href="${b.receipt}" target="_blank"><img src="${b.receipt}" class="w-12 h-10 object-cover rounded border"></a></td>
+                            <td class="p-4"><span class="px-2 py-0.5 rounded-full text-xs font-bold border ${badgeColor}">${b.status}</span></td>
+                            <td class="p-4 text-center">
+                                <button onclick="changeStatus(${b.id}, 'تم التأكيد')" class="bg-green-600 text-white text-xs px-2 py-1 rounded-lg font-bold ml-1">موافقة</button>
+                                <button onclick="changeStatus(${b.id}, 'مرفوض')" class="bg-red-600 text-white text-xs px-2 py-1 rounded-lg font-bold">رفض</button>
+                            </td>
+                        </tr>`;
+                });
+            });
+    }
+
+    function changeStatus(id, newStatus) {
+        fetch(`/api/admin/bookings/status/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        }).then(() => loadBookingsData());
+    }
+
+    // 2. تحميل وعرض الأطباء
+    function loadDoctorsData() {
+        const selectedBranch = document.getElementById('admin-branch-filter').value;
+
+        fetch('/api/doctors')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('doctors-table-body');
+                tbody.innerHTML = '';
+
+                const filteredDocs = selectedBranch === 'الكل' ? data : data.filter(d => d.branch === selectedBranch);
+
+                if(filteredDocs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">لا يوجد أطباء مسجلين في فرع (${selectedBranch}) حالياً.</td></tr>`;
+                    return;
+                }
+
+                filteredDocs.forEach(d => {
+                    let schedBadges = Object.keys(d.schedule).map(day => `<span class="block text-[11px] bg-blue-50 text-blue-700 px-1 py-0.5 rounded border mb-0.5">${day}: ${d.schedule[day]}</span>`).join('');
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="p-3"><img src="${d.image}" class="w-10 h-10 rounded-full object-cover border shadow-sm"></td>
+                            <td class="p-3 font-bold text-gray-900">${d.name}</td>
+                            <td class="p-3 text-xs">تخصص ${d.specialty} <br><span class="text-blue-600 font-bold">📍 فرع ${d.branch}</span></td>
+                            <td class="p-3 text-xs">${schedBadges}</td>
+                            <td class="p-3 text-center">
+                                <button onclick="editDoctor(${JSON.stringify(d).replace(/"/g, '&quot;')})" class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold ml-1 transition hover:bg-blue-700">تعديل 📝</button>
+                                <button onclick="deleteDoctor(${d.id})" class="bg-red-100 text-red-600 text-xs px-3 py-1.5 rounded-lg font-bold transition hover:bg-red-200">حذف ❌</button>
+                            </td>
+                        </tr>`;
+                });
+            });
+    }
+
+    // تجهيز الفورم للتعديل
+    function editDoctor(doc) {
+        document.getElementById('form-title').innerText = `📝 تعديل بيانات ومواعيد: ${doc.name}`;
+        document.getElementById('doc-id').value = doc.id;
+        document.getElementById('doc-name').value = doc.name;
+        document.getElementById('doc-specialty').value = doc.specialty;
+        document.getElementById('doc-branch').value = doc.branch;
+        document.getElementById('doc-bio').value = doc.bio;
+        document.getElementById('doc-image').value = doc.image;
+
+        let schedText = Object.keys(doc.schedule).map(day => `${day} | ${doc.schedule[day]}`).join(' , ');
+        document.getElementById('doc-schedule').value = schedText;
+    }
+
+    // دالة الحفظ الذكية (إضافة جديد أو تعديل حالي)
+    function saveDoctor(e) {
+        e.preventDefault();
+        const docId = document.getElementById('doc-id').value;
+        
+        // تفكيك وتحويل المواعيد المكتوبة لنظام كائن سليم
+        let schedObj = {};
+        let rawSched = document.getElementById('doc-schedule').value.split(',');
+        rawSched.forEach(item => {
+            if(item.includes('|')) {
+                let [day, time] = item.split('|');
+                if(day && time) schedObj[day.trim()] = time.trim();
+            }
+        });
+
+        // لو الأدمن مكتبش مواعيد خالص، بنحط ميعاد افتراضي عشان السيستم ميعلقش
+        if (Object.keys(schedObj).length === 0) {
+            schedObj = { "السبت": "10:00 ص - 02:00 ظ", "الأحد": "12:00 ظ - 04:00 ع" };
+        }
+
+        const docData = {
+            id: docId ? parseInt(docId) : null, // لو فاضي يبقى دكتور جديد تماماً
+            name: document.getElementById('doc-name').value.trim(),
+            specialty: document.getElementById('doc-specialty').value.trim(),
+            branch: document.getElementById('doc-branch').value,
+            bio: document.getElementById('doc-bio').value.trim(),
+            image: document.getElementById('doc-image').value.trim(),
+            schedule: schedObj
+        };
+
+        fetch('/api/admin/doctors', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(docData)
+        }).then(res => res.json()).then(() => {
+            alert(docId ? 'تم تعديل بيانات ومواعيد الدكتور بنجاح!' : 'تم إضافة دكتور جديد ومواعيده بنجاح للفرع المختار!');
+            clearDocForm();
+            loadDoctorsData();
+        });
+    }
+
+    function deleteDoctor(id) {
+        if(confirm('هل أنت متأكد تماماً من حذف هذا الدكتور نهائياً من المستشفى؟')) {
+            fetch(`/api/admin/doctors/delete/${id}`, { method: 'POST' })
+                .then(() => loadDoctorsData());
+        }
+    }
+
+    function clearDocForm() {
+        document.getElementById('form-title').innerText = `➕ إضافة دكتور جديد للسيستم / أو تعديل دكتور ومواعيده`;
+        document.getElementById('doctor-form').reset();
+        document.getElementById('doc-id').value = '';
+    }
+
+    // تحميل البيانات المبدئية عند فتح الصفحة
+    loadBookingsData();
+</script>
+</body>
+</html>
