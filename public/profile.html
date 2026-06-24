@@ -74,6 +74,20 @@
                 <div id="schedule-list" class="space-y-2"></div>
             </div>
 
+            <div class="mb-4 bg-blue-5 text-p p-4 rounded-xl border border-blue-100">
+    <label class="block text-sm font-bold text-blue-900 mb-2">اختر نوع الكشف:</label>
+    <div class="flex gap-6">
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="appointment-type" value="عادي" checked onchange="updateSelectedPrice()">
+            <span class="font-medium text-gray-800">كشف عادي (<span id="price-regular-view">0</span> جنيه)</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="appointment-type" value="مستعجل" onchange="updateSelectedPrice()">
+            <span class="font-medium text-gray-800 text-red-600 font-bold">كشف مستعجل (<span id="price-urgent-view">0</span> جنيه)</span>
+        </label>
+    </div>
+</div>
+
             <!-- فورم الدفع بـ فوري -->
             <!-- الجزء الخاص بالفورم داخل ملف profile.html -->
 <div class="bg-gray-50 p-4 rounded-xl border">
@@ -108,6 +122,9 @@
         window.location.href = 'doctors.html';
     }
     const doc = JSON.parse(docData);
+    // نضع الأسعار الافتراضية لو الأدمين لسه محدثهاش
+document.getElementById('price-regular-view').innerText = doc.priceRegular || 200;
+document.getElementById('price-urgent-view').innerText = doc.priceUrgent || 400;
 
     // 2. قراءة بيانات المريض الحالي المسجل دخوله
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -157,6 +174,13 @@
         const reader = new FileReader();
         reader.onloadend = function () {
             const base64Image = reader.result;
+
+            const typeSelected = document.querySelector('input[name="appointment-type"]:checked').value;
+const priceSelected = typeSelected === 'عادي' ? (doc.priceRegular || 200) : (doc.priceUrgent || 400);
+
+// ضيف دول جوة الـ object اللي بتبعته في الـ body:
+// appointmentType: typeSelected,
+// appointmentPrice: priceSelected,
 
             // تجهيز بيانات الحجز
             const bookingData = {
