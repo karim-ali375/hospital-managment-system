@@ -37,7 +37,7 @@
     <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border">
         <h2 id="auth-title" class="text-2xl font-bold text-center text-blue-900 mb-6">تسجيل الدخول 🏥</h2>
         
-       <form id="auth-form" onsubmit="handleSubmit(event)" enctype="multipart/form-data" class="space-y-4">
+      <form id="auth-form" onsubmit="handleSubmit(event)" class="space-y-4">
             <div id="signup-fields" class="hidden space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">الاسم بالكامل:</label>
@@ -80,63 +80,65 @@
         }
 
         function handleSubmit(e) {
-            e.preventDefault();
-            const user = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value.trim();
+    e.preventDefault();
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
 
-            if (isLoginMode) {
-                if (user === 'admin' && pass === 'admin123') {
-                    window.location.href = 'admin.html';
-                    return;
-                }
-                
-                fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user, pass })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.success) {
-                        localStorage.setItem('currentUser', JSON.stringify(data.user));
-                        window.location.href = 'patient-dashboard.html'; 
-                    } else {
-                        alert('اسم المستخدم أو الباسورد غلط!');
-                    }
-                });
-            } else {
-                // الشغل العالي والنظيف هنا لإنشاء الحساب 🚀
-                const form = document.getElementById('auth-form');
-                const formData = new FormData();
-
-                // بنلم البيانات يدوي عشان نضمن إن الأسامي تطابق السيرفر بالملي
-                formData.append('username', user);
-                formData.append('password', pass);
-                formData.append('name', document.getElementById('fullname').value);
-                formData.append('phone', document.getElementById('phone').value);
-                
-                const fileInput = document.getElementById('user-avatar');
-                if (fileInput.files[0]) {
-                    // بنبعتها باسم 'image' وباسم 'avatar' احتياطي عشان ترضي السيرفر في الحالتين
-                    formData.append('image', fileInput.files[0]);
-                    formData.append('avatar', fileInput.files[0]);
-                }
-
-                fetch('/api/auth/signup', {
-                    method: 'POST',
-                    body: formData // بنبعت الـ formData مباشرة (بدون Headers وبدون JSON.stringify)
-                })
-                .then(res => {
-                    if(res.ok) {
-                        alert('تم إنشاء حسابك الشخصي بنجاح! يمكنك الآن تسجيل الدخول.');
-                        toggleAuthMode();
-                    } else {
-                        alert('حصلت مشكلة أثناء التسجيل، تأكد من حجم الصورة!');
-                    }
-                })
-                .catch(err => console.error('Error:', err));
-            }
+    if (isLoginMode) {
+        if (user === 'admin' && pass === 'admin123') {
+            window.location.href = 'admin.html';
+            return;
         }
+        
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user, pass })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                localStorage.setItem('currentUser', JSON.stringify(data.user));
+                window.location.href = 'patient-dashboard.html'; 
+            } else {
+                alert('اسم المستخدم أو الباسورد غلط!');
+            }
+        });
+    } else {
+        // الحل المضمون للسيرفر بتاعك 🚀
+        const fileInput = document.getElementById('user-avatar');
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = function() {
+            const imageString = reader.result || 'https://via.placeholder.com/150';
+            
+            const signupData = {
+                name: document.getElementById('fullname').value,
+                phone: document.getElementById('phone').value,
+                // بنبعتها بالاسمين عشان نرضي السيرفر والبروفايل مع بعض!
+                avatar: imageString,
+                image: imageString, 
+                user: user, 
+                pass: pass
+            };
+
+            fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(signupData)
+            })
+            .then(res => res.json())
+            .then(() => {
+                alert('تم إنشاء حسابك الشخصي بنجاح! يمكنك الآن تسجيل الدخول.');
+                toggleAuthMode();
+            })
+            .catch(err => console.error('Error:', err));
+        };
+
+        if(file) { reader.readAsDataURL(file); } else { reader.onloadend(); }
+    }
+}
 </script>
 </body>
 </html>
