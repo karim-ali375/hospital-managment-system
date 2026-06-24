@@ -37,7 +37,7 @@
     <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border">
         <h2 id="auth-title" class="text-2xl font-bold text-center text-blue-900 mb-6">تسجيل الدخول 🏥</h2>
         
-        <form id="auth-form" onsubmit="handleSubmit(event)" class="space-y-4">
+       <form id="auth-form" onsubmit="handleSubmit(event)" enctype="multipart/form-data" class="space-y-4">
             <div id="signup-fields" class="hidden space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">الاسم بالكامل:</label>
@@ -49,7 +49,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">اختر صورتك الشخصية:</label>
-                    <input type="file" id="user-avatar" accept="image/*" class="w-full border p-1.5 rounded-xl mt-1 bg-white text-xs">
+                   <input type="file" id="user-avatar" name="image" accept="image/*" class="w-full border p-1.5 rounded-xl mt-1 bg-white text-xs">
                 </div>
             </div>
             <div>
@@ -99,37 +99,44 @@
                 .then(data => {
                     if(data.success) {
                         localStorage.setItem('currentUser', JSON.stringify(data.user));
-                        window.location.href = 'patient-dashboard.html'; // توجيه لبروفايل المريض الشخصي
+                        window.location.href = 'patient-dashboard.html'; 
                     } else {
                         alert('اسم المستخدم أو الباسورد غلط!');
                     }
                 });
             } else {
+                // الشغل العالي والنظيف هنا لإنشاء الحساب 🚀
+                const form = document.getElementById('auth-form');
+                const formData = new FormData();
+
+                // بنلم البيانات يدوي عشان نضمن إن الأسامي تطابق السيرفر بالملي
+                formData.append('username', user);
+                formData.append('password', pass);
+                formData.append('name', document.getElementById('fullname').value);
+                formData.append('phone', document.getElementById('phone').value);
+                
                 const fileInput = document.getElementById('user-avatar');
-                const file = fileInput.files[0];
-                const reader = new FileReader();
+                if (fileInput.files[0]) {
+                    // بنبعتها باسم 'image' وباسم 'avatar' احتياطي عشان ترضي السيرفر في الحالتين
+                    formData.append('image', fileInput.files[0]);
+                    formData.append('avatar', fileInput.files[0]);
+                }
 
-                reader.onloadend = function() {
-                    const signupData = {
-                        name: document.getElementById('fullname').value,
-                        phone: document.getElementById('phone').value,
-                        avatar: reader.result || 'https://via.placeholder.com/150',
-                        user, pass
-                    };
-
-                    fetch('/api/auth/signup', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(signupData)
-                    }).then(() => {
+                fetch('/api/auth/signup', {
+                    method: 'POST',
+                    body: formData // بنبعت الـ formData مباشرة (بدون Headers وبدون JSON.stringify)
+                })
+                .then(res => {
+                    if(res.ok) {
                         alert('تم إنشاء حسابك الشخصي بنجاح! يمكنك الآن تسجيل الدخول.');
                         toggleAuthMode();
-                    });
-                };
-
-                if(file) { reader.readAsDataURL(file); } else { reader.onloadend(); }
+                    } else {
+                        alert('حصلت مشكلة أثناء التسجيل، تأكد من حجم الصورة!');
+                    }
+                })
+                .catch(err => console.error('Error:', err));
             }
         }
-    </script>
+</script>
 </body>
 </html>
