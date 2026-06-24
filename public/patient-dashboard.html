@@ -119,7 +119,10 @@
         }
 
         function displayUserData() {
-            document.getElementById('user-avatar').src = user.avatar || 'https://via.placeholder.com/150';
+            // التعديل السحري: قراءة image أو avatar لضمان ظهور الصورة دائماً
+            const currentImg = user.image || user.avatar || 'https://via.placeholder.com/150';
+            document.getElementById('user-avatar').src = currentImg;
+            
             document.getElementById('user-display-name').innerText = user.name;
             document.getElementById('user-display-phone').innerText = `📞 ${user.phone}`;
             
@@ -147,12 +150,17 @@
             const file = fileInput.files[0];
 
             const sendUpdate = (avatarBase64) => {
+                // بنجيب الصورة الحالية عشان لو مرفعش جديدة نثبتها
+                const currentPhoto = user.image || user.avatar;
+
                 const updatedPayload = {
                     user: user.user, // اليوزر نيم ثابت لتعريف الحساب بالسيرفر
                     pass: user.pass,
                     name: newName,
                     phone: newPhone,
-                    avatar: avatarBase64 || user.avatar
+                    // بنبعتها بالاسمين للسيرفر عشان يرضى بكل الحالات
+                    avatar: avatarBase64 || currentPhoto,
+                    image: avatarBase64 || currentPhoto
                 };
 
                 fetch('/api/auth/update', {
@@ -164,11 +172,20 @@
                 .then(resData => {
                     if (resData.success) {
                         alert('تم تحديث بيانات حسابك وصورتك الشخصية بنجاح! 🎉');
-                        localStorage.setItem('currentUser', JSON.stringify(resData.user));
-                        user = resData.user;
+                        
+                        // هنا اللقطة: بنضمن إن الكائن المتسيف جواه الخاصيتين عشان العرض ميتأثرش
+                        const savedUser = resData.user || {};
+                        if (!savedUser.image && savedUser.avatar) savedUser.image = savedUser.avatar;
+                        if (!savedUser.avatar && savedUser.image) savedUser.avatar = savedUser.image;
+
+                        localStorage.setItem('currentUser', JSON.stringify(savedUser));
+                        user = savedUser;
+                        
                         displayUserData();
                         toggleEditMode(false);
                         loadPatientHistory(); // إعادة تحميل الهيستوري بالتحديث الجديد
+                    } else {
+                        alert('لم يتم التحديث بنجاح، يرجى التحقق من حجم الصورة.');
                     }
                 });
             };
@@ -188,6 +205,7 @@
                 .then(res => res.json())
                 .then(allBookings => {
                     const tbody = document.getElementById('history-table-body');
+                    if(!tbody) return;
                     tbody.innerHTML = '';
 
                     // فلترة ذكية: جلب الحجوزات التابعة لتليفون الحساب الحالي
@@ -217,6 +235,6 @@
         // تشغيل الدوال عند فتح الصفحة
         displayUserData();
         loadPatientHistory();
-    </script>
+</script>
 </body>
 </html>
