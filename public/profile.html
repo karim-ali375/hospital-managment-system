@@ -74,16 +74,16 @@
                 <div id="schedule-list" class="space-y-2"></div>
             </div>
 
-            <div class="mb-4 bg-blue-5 text-p p-4 rounded-xl border border-blue-100">
+           <div class="mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
     <label class="block text-sm font-bold text-blue-900 mb-2">اختر نوع الكشف:</label>
     <div class="flex gap-6">
         <label class="flex items-center gap-2 cursor-pointer">
             <input type="radio" name="appointment-type" value="عادي" checked onchange="updateSelectedPrice()">
-            <span class="font-medium text-gray-800">كشف عادي (<span id="price-regular-view">0</span> جنيه)</span>
+            <span class="font-medium text-gray-800">كشف عادي (<span id="price-regular-view">200</span> جنيه)</span>
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
             <input type="radio" name="appointment-type" value="مستعجل" onchange="updateSelectedPrice()">
-            <span class="font-medium text-gray-800 text-red-600 font-bold">كشف مستعجل (<span id="price-urgent-view">0</span> جنيه)</span>
+            <span class="font-medium text-red-600 font-bold">كشف مستعجل (<span id="price-urgent-view">400</span> جنيه)</span>
         </label>
     </div>
 </div>
@@ -96,6 +96,9 @@
         برجاء تحويل مبلغ **200 جنيه** للرقم: <strong class="text-blue-900">01099998887</strong> وارفع صورة الإيصال بالأسفل لتأكيد الحجز.
     </p>
     
+
+
+
     <form onsubmit="confirmBooking(event)" class="space-y-3">
         <div>
             <label class="block text-xs font-medium">اسم المريض:</label>
@@ -122,9 +125,10 @@
         window.location.href = 'doctors.html';
     }
     const doc = JSON.parse(docData);
-    // نضع الأسعار الافتراضية لو الأدمين لسه محدثهاش
-document.getElementById('price-regular-view').innerText = doc.priceRegular || 200;
-document.getElementById('price-urgent-view').innerText = doc.priceUrgent || 400;
+    
+    // عرض الأسعار الديناميكية المحددة من قبل الأدمن فوراً عند تحميل الصفحة
+    document.getElementById('price-regular-view').innerText = doc.priceRegular || 200;
+    document.getElementById('price-urgent-view').innerText = doc.priceUrgent || 400;
 
     // 2. قراءة بيانات المريض الحالي المسجل دخوله
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -135,7 +139,7 @@ document.getElementById('price-urgent-view').innerText = doc.priceUrgent || 400;
     document.getElementById('doc-spec').innerText = `تخصص ${doc.specialty} (${doc.branch})`;
     document.getElementById('doc-bio').innerText = doc.bio;
 
-    // [تعديل ذكي]: لو المريض مسجل دخول، بنفتح الخانات يعدلها براحته بس بنسيب بياناته كاقتراح
+    // لو المريض مسجل دخول، بنفتح الخانات يعدلها براحته بس بنسيب بياناته كاقتراح
     if (currentUser) {
         document.getElementById('p-name').value = currentUser.name;
         document.getElementById('p-phone').value = currentUser.phone;
@@ -160,9 +164,15 @@ document.getElementById('price-urgent-view').innerText = doc.priceUrgent || 400;
     function confirmBooking(e) {
         e.preventDefault();
 
+        // 1. جلب الموعد المختار
         const selectedRadio = document.querySelector('input[name="selected_slot"]:checked').value;
         const [day, slot] = selectedRadio.split(' | ');
 
+        // 2. حساب السعر ونوع الكشف المختار ديناميكياً 🎯
+        const typeSelected = document.querySelector('input[name="appointment-type"]:checked').value;
+        const priceSelected = typeSelected === 'عادي' ? (doc.priceRegular || 200) : (doc.priceUrgent || 400);
+
+        // 3. جلب ملف الإيصال
         const fileInput = document.getElementById('p-receipt-file');
         const file = fileInput.files[0];
 
@@ -175,34 +185,30 @@ document.getElementById('price-urgent-view').innerText = doc.priceUrgent || 400;
         reader.onloadend = function () {
             const base64Image = reader.result;
 
-            const typeSelected = document.querySelector('input[name="appointment-type"]:checked').value;
-const priceSelected = typeSelected === 'عادي' ? (doc.priceRegular || 200) : (doc.priceUrgent || 400);
-
-// ضيف دول جوة الـ object اللي بتبعته في الـ body:
-// appointmentType: typeSelected,
-// appointmentPrice: priceSelected,
-
-            // تجهيز بيانات الحجز
+            // تجهيز بيانات الحجز الكاملة للسيرفر
             const bookingData = {
                 patientName: document.getElementById('p-name').value.trim(), 
                 phone: document.getElementById('p-phone').value.trim(),       
-                // هنا بقى السر: لو المريض مسجل دخول بناخد تليفونه، لو مش مسجل بنحط رقم التليفون اللي كتبه عادي عشان السيرفر ميقفش
                 accountPhone: currentUser ? currentUser.phone : document.getElementById('p-phone').value.trim(), 
                 doctor: doc.name,
                 day: day,
                 slot: slot,
-                price: "200 جنيه",
+                // الخصائص الجديدة لربط نوع الكشف والأسعار بالأدمن والـ Dashboard
+                appointmentType: typeSelected,
+                appointmentPrice: priceSelected,
+                price: `${priceSelected} جنيه`, // لتأمين الخانات القديمة في السيرفر إن وجدت
                 receipt: base64Image
             };
 
+            // إرسال البيانات للسيرفر
             fetch('/api/bookings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(bookingData)
             }).then(() => {
-                alert('تم إرسال حجزك بنجاح!');
+                alert('تم إرسال حجزك بنجاح! 🎉');
                 
-                // [إلغاء طلب الـ Login]: لو هو جوه الأكونت يرجعه للـ Dashboard علطول، لو بره يوديه لصفحة الدخول
+                // التوجيه الذكي بعد الحجز
                 if (currentUser) {
                     window.location.href = 'patient-dashboard.html';
                 } else {

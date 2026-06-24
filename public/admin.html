@@ -9,19 +9,16 @@
 <body class="bg-gray-100 font-sans min-h-screen p-6">
     <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg border p-6">
         
-        <!-- هيدر اللوحة -->
         <div class="flex justify-between items-center border-b pb-4 mb-6">
             <h1 class="text-xl font-bold text-blue-950">⚙️ لوحة الإدارة والتحكم الشاملة بمستشفى الشفاء</h1>
             <button onclick="localStorage.removeItem('currentUser'); window.location.href='auth.html';" class="bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-red-700 transition">تسجيل الخروج</button>
         </div>
 
-        <!-- أزرار التنقل بين الأقسام (Tabs) -->
         <div class="flex gap-2 mb-6 border-b pb-2">
             <button onclick="switchTab('bookings-tab')" id="btn-bookings-tab" class="px-4 py-2 font-bold rounded-xl text-sm bg-blue-900 text-white shadow-sm">📋 إدارة الحجوزات والطلبات</button>
             <button onclick="switchTab('doctors-tab')" id="btn-doctors-tab" class="px-4 py-2 font-bold rounded-xl text-sm bg-gray-100 text-gray-700 hover:bg-gray-200">🧑‍⚕️ إدارة وبيانات الأطباء</button>
         </div>
 
-        <!-- ================= تبويب إدارة الحجوزات ================= -->
         <div id="bookings-tab" class="tab-content">
             <div class="overflow-x-auto">
                 <table class="w-full text-right border-collapse text-sm">
@@ -30,7 +27,7 @@
                             <th class="p-4 rounded-r-xl">بيانات المريض</th>
                             <th class="p-4">الطبيب</th>
                             <th class="p-4">التوقيت</th>
-                            <th class="p-4">قيمة الكشف</th>
+                            <th class="p-4">نوع وقيمة الكشف</th>
                             <th class="p-4">إيصال فوري</th>
                             <th class="p-4">الحالة</th>
                             <th class="p-4 text-center rounded-l-xl">إجراءات</th>
@@ -41,7 +38,6 @@
             </div>
         </div>
 
-        <!-- ================= تبويب إدارة الأطباء والبيانات ================= -->
         <div id="doctors-tab" class="tab-content hidden">
             
             <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -77,11 +73,21 @@
                             <option value="الإسكندرية">الإسكندرية</option>
                         </select>
                     </div>
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-1">
                         <label class="block font-medium text-gray-700">النبذة التعرفية (Bio):</label>
                         <input type="text" id="doc-bio" required class="w-full border p-2 rounded-xl mt-1 bg-white outline-blue-600">
                     </div>
+                    
                     <div>
+                        <label class="block font-medium text-gray-700 text-blue-900 font-bold">سعر الكشف العادي (جنيه):</label>
+                        <input type="number" id="doc-price-regular" required class="w-full border p-2 rounded-xl mt-1 bg-white outline-blue-600 font-bold" placeholder="مثال: 200">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700 text-red-600 font-bold">سعر الكشف المستعجل (جنيه):</label>
+                        <input type="number" id="doc-price-urgent" required class="w-full border p-2 rounded-xl mt-1 bg-white outline-blue-600 font-bold" placeholder="مثال: 400">
+                    </div>
+
+                    <div class="md:col-span-3">
                         <label class="block font-medium text-gray-700">رابط صورة الدكتور (URL):</label>
                         <input type="url" id="doc-image" required class="w-full border p-2 rounded-xl mt-1 bg-white outline-blue-600">
                     </div>
@@ -106,6 +112,7 @@
                             <th class="p-3 rounded-r-xl">الصورة</th>
                             <th class="p-3">اسم الدكتور</th>
                             <th class="p-3">التخصص والفرع</th>
+                            <th class="p-3">الأسعار الحالية</th>
                             <th class="p-3">المواعيد الحالية</th>
                             <th class="p-3 text-center rounded-l-xl">التحكم والإجراءات</th>
                         </tr>
@@ -137,12 +144,24 @@
                 tbody.innerHTML = data.length === 0 ? `<tr><td colspan="7" class="p-4 text-center text-gray-500">لا توجد حجوزات حالياً.</td></tr>` : '';
                 data.forEach(b => {
                     let badgeColor = b.status === 'تم التأكيد' ? 'text-green-700 bg-green-50 border-green-200' : b.status === 'مرفوض' ? 'text-red-700 bg-red-50 border-red-200' : 'text-yellow-700 bg-yellow-50 border-yellow-200';
+                    
+                    // تحديد نوع الكشف والسعر بدقة لعرضها للأدمن ديناميكياً
+                    const typeText = b.appointmentType || 'عادي';
+                    const typeBadgeColor = typeText === 'مستعجل' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-blue-50 text-blue-700 border-blue-100';
+                    const displayPrice = b.appointmentPrice ? `${b.appointmentPrice} ج` : (b.price || "200 ج");
+
                     tbody.innerHTML += `
                         <tr class="hover:bg-gray-50 transition">
                             <td class="p-4"><strong>${b.patientName}</strong><br><span class="text-gray-500 text-xs">${b.phone}</span></td>
                             <td class="p-4 text-blue-900 font-bold">${b.doctor}</td>
                             <td class="p-4 text-xs"><strong>${b.day}</strong><br>${b.slot}</td>
-                            <td class="p-4 text-green-600 font-bold">${b.price}</td>
+                            
+                            <td class="p-4">
+                                <span class="inline-block px-2 py-0.5 rounded border text-xs font-bold ${typeBadgeColor}">
+                                    ${typeText} (${displayPrice})
+                                </span>
+                            </td>
+                            
                             <td class="p-4"><a href="${b.receipt}" target="_blank"><img src="${b.receipt}" class="w-12 h-10 object-cover rounded border"></a></td>
                             <td class="p-4"><span class="px-2 py-0.5 rounded-full text-xs font-bold border ${badgeColor}">${b.status}</span></td>
                             <td class="p-4 text-center">
@@ -175,17 +194,28 @@
                 const filteredDocs = selectedBranch === 'الكل' ? data : data.filter(d => d.branch === selectedBranch);
 
                 if(filteredDocs.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">لا يوجد أطباء مسجلين في فرع (${selectedBranch}) حالياً.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">لا يوجد أطباء مسجلين في فرع (${selectedBranch}) حالياً.</td></tr>`;
                     return;
                 }
 
                 filteredDocs.forEach(d => {
                     let schedBadges = Object.keys(d.schedule).map(day => `<span class="block text-[11px] bg-blue-50 text-blue-700 px-1 py-0.5 rounded border mb-0.5">${day}: ${d.schedule[day]}</span>`).join('');
+                    
+                    // جلب وعرض الأسعار الحالية للدكتور في الجدول
+                    const regularPrice = d.priceRegular || 200;
+                    const urgentPrice = d.priceUrgent || 400;
+
                     tbody.innerHTML += `
                         <tr class="hover:bg-gray-50 transition">
                             <td class="p-3"><img src="${d.image}" class="w-10 h-10 rounded-full object-cover border shadow-sm"></td>
                             <td class="p-3 font-bold text-gray-900">${d.name}</td>
                             <td class="p-3 text-xs">تخصص ${d.specialty} <br><span class="text-blue-600 font-bold">📍 فرع ${d.branch}</span></td>
+                            
+                            <td class="p-3 text-xs">
+                                <span class="block text-gray-700">عادي: <strong>${regularPrice} ج</strong></span>
+                                <span class="block text-red-600 font-bold mt-0.5">مستعجل: <strong>${urgentPrice} ج</strong></span>
+                            </td>
+
                             <td class="p-3 text-xs">${schedBadges}</td>
                             <td class="p-3 text-center">
                                 <button onclick="editDoctor(${JSON.stringify(d).replace(/"/g, '&quot;')})" class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold ml-1 transition hover:bg-blue-700">تعديل 📝</button>
@@ -196,7 +226,7 @@
             });
     }
 
-    // تجهيز الفورم للتعديل
+    // تجهيز الفورم للتعديل وتعبئة خانات الأسعار تلقائياً
     function editDoctor(doc) {
         document.getElementById('form-title').innerText = `📝 تعديل بيانات ومواعيد: ${doc.name}`;
         document.getElementById('doc-id').value = doc.id;
@@ -205,12 +235,16 @@
         document.getElementById('doc-branch').value = doc.branch;
         document.getElementById('doc-bio').value = doc.bio;
         document.getElementById('doc-image').value = doc.image;
+        
+        // ملء حقول الأسعار تلقائياً عند ضغط تعديل دكتور
+        document.getElementById('doc-price-regular').value = doc.priceRegular || 200;
+        document.getElementById('doc-price-urgent').value = doc.priceUrgent || 400;
 
         let schedText = Object.keys(doc.schedule).map(day => `${day} | ${doc.schedule[day]}`).join(' , ');
         document.getElementById('doc-schedule').value = schedText;
     }
 
-    // دالة الحفظ الذكية (إضافة جديد أو تعديل حالي)
+    // دالة الحفظ الذكية (إضافة جديد أو تعديل حالي مع حفظ الأسعار)
     function saveDoctor(e) {
         e.preventDefault();
         const docId = document.getElementById('doc-id').value;
@@ -237,6 +271,9 @@
             branch: document.getElementById('doc-branch').value,
             bio: document.getElementById('doc-bio').value.trim(),
             image: document.getElementById('doc-image').value.trim(),
+            // جمع قيم الأسعار الجديدة المدخلة من قبل الأدمن للسيرفر 🎯
+            priceRegular: parseInt(document.getElementById('doc-price-regular').value) || 200,
+            priceUrgent: parseInt(document.getElementById('doc-price-urgent').value) || 400,
             schedule: schedObj
         };
 
@@ -262,6 +299,8 @@
         document.getElementById('form-title').innerText = `➕ إضافة دكتور جديد للسيستم / أو تعديل دكتور ومواعيده`;
         document.getElementById('doctor-form').reset();
         document.getElementById('doc-id').value = '';
+        document.getElementById('doc-price-regular').value = '';
+        document.getElementById('doc-price-urgent').value = '';
     }
 
     // تحميل البيانات المبدئية عند فتح الصفحة
